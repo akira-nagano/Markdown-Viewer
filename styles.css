@@ -410,3 +410,7 @@ a:focus {
 [data-theme="dark"] .markdown-body code {
   background-color: var(--code-bg);
 }
+
+[data-theme="dark"] .hljs {
+  color: #e8eaed;
+}
