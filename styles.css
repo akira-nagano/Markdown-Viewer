@@ -414,3 +414,23 @@ a:focus {
 [data-theme="dark"] .hljs {
   color: #e8eaed;
 }
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.stats-container {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.stat-item {
+  align-items: center;
+}
+
+.stat-item i {
+  font-size: 1rem;
+  opacity: 0.8;
+}
