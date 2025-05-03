@@ -249,7 +249,7 @@ body {
 }
 
 /* Responsive design for mobile */
-@media (max-width: 768px) {
+@media (max-width: 1080px) {
   .content-container {
       flex-direction: column;
   }
@@ -266,6 +266,8 @@ body {
   
   .toolbar {
       flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
   }
 }
 
@@ -496,7 +498,7 @@ a:focus {
   z-index: 1001;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1080px) {
   .mobile-menu {
     display: block;
   }
@@ -626,4 +628,23 @@ a:focus {
   .toolbar.d-none.d-md-flex {
     display: none !important;
   }
+}
+
+.github-link {
+  color: var(--text-color);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
+  margin-right: 2rem;
+}
+
+.github-link:hover {
+  color: var(--accent-color);
+  transform: scale(1.1);
+}
+
+.github-link i {
+  font-size: 1.5rem;
 }

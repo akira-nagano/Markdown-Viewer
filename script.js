@@ -105,166 +105,166 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   const sampleMarkdown = `# Welcome to Markdown Viewer
-    ## ✨ Key Features
-    - **Live Preview** with GitHub styling
-    - **Smart Import/Export** (MD, HTML, PDF)
-    - **Mermaid Diagrams** for visual documentation
-    - **LaTeX Math Support** for scientific notation
-    - **Emoji Support** 😄 👍 🎉
 
-    ## 💻 Code with Syntax Highlighting
-    \`\`\`javascript
-      function renderMarkdown() {
-        const markdown = markdownEditor.value;
-        const html = marked.parse(markdown);
-        const sanitizedHtml = DOMPurify.sanitize(html);
-        markdownPreview.innerHTML = sanitizedHtml;
-        
-        // Apply syntax highlighting to code blocks
-        markdownPreview.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
-        });
-      }
-    \`\`\`
+## ✨ Key Features
+- **Live Preview** with GitHub styling
+- **Smart Import/Export** (MD, HTML, PDF)
+- **Mermaid Diagrams** for visual documentation
+- **LaTeX Math Support** for scientific notation
+- **Emoji Support** 😄 👍 🎉
 
-    ## 🧮 Mathematical Expressions
-    Write complex formulas with LaTeX syntax:
+## 💻 Code with Syntax Highlighting
+\`\`\`javascript
+  function renderMarkdown() {
+    const markdown = markdownEditor.value;
+    const html = marked.parse(markdown);
+    const sanitizedHtml = DOMPurify.sanitize(html);
+    markdownPreview.innerHTML = sanitizedHtml;
+    
+    // Apply syntax highlighting to code blocks
+    markdownPreview.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+    });
+  }
+\`\`\`
 
-    Inline equation: $$E = mc^2$$
+## 🧮 Mathematical Expressions
+Write complex formulas with LaTeX syntax:
 
-    Display equations:
-    $$\\frac{\\partial f}{\\partial x} = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$
+Inline equation: $$E = mc^2$$
 
-    $$\\sum_{i=1}^{n} i^2 = \\frac{n(n+1)(2n+1)}{6}$$
+Display equations:
+$$\\frac{\\partial f}{\\partial x} = \\lim_{h \\to 0} \\frac{f(x+h) - f(x)}{h}$$
 
-    ## 📊 Mermaid Diagrams
-    Create powerful visualizations directly in markdown:
+$$\\sum_{i=1}^{n} i^2 = \\frac{n(n+1)(2n+1)}{6}$$
 
-    \`\`\`mermaid
-    flowchart LR
-        A[Start] --> B{Is it working?}
-        B -->|Yes| C[Great!]
-        B -->|No| D[Debug]
-        C --> E[Deploy]
-        D --> B
-    \`\`\`
+## 📊 Mermaid Diagrams
+Create powerful visualizations directly in markdown:
 
-    ### Sequence Diagram Example
-    \`\`\`mermaid
-    sequenceDiagram
-        User->>Editor: Type markdown
-        Editor->>Preview: Render content
-        User->>Editor: Make changes
-        Editor->>Preview: Update rendering
-        User->>Export: Save as PDF
-    \`\`\`
+\`\`\`mermaid
+flowchart LR
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Great!]
+    B -->|No| D[Debug]
+    C --> E[Deploy]
+    D --> B
+\`\`\`
 
-    ## 📋 Task Management
-    - [x] Create responsive layout
-    - [x] Implement live preview with GitHub styling
-    - [x] Add syntax highlighting for code blocks
-    - [x] Support math expressions with LaTeX
-    - [x] Enable mermaid diagrams
+### Sequence Diagram Example
+\`\`\`mermaid
+sequenceDiagram
+    User->>Editor: Type markdown
+    Editor->>Preview: Render content
+    User->>Editor: Make changes
+    Editor->>Preview: Update rendering
+    User->>Export: Save as PDF
+\`\`\`
 
-    ## 🆚 Feature Comparison
+## 📋 Task Management
+- [x] Create responsive layout
+- [x] Implement live preview with GitHub styling
+- [x] Add syntax highlighting for code blocks
+- [x] Support math expressions with LaTeX
+- [x] Enable mermaid diagrams
 
-    | Feature                  | Markdown Viewer (Ours) | Other Markdown Editors  |
-    |:-------------------------|:----------------------:|:-----------------------:|
-    | Live Preview             | ✅ GitHub-Styled       | ✅                     |
-    | Sync Scrolling           | ✅ Two-way             | 🔄 Partial/None        |
-    | Mermaid Support          | ✅                     | ❌/Limited             |
-    | LaTeX Math Rendering     | ✅                     | ❌/Limited             |
+## 🆚 Feature Comparison
 
-    ### 📝 Multi-row Headers Support
+| Feature                  | Markdown Viewer (Ours) | Other Markdown Editors  |
+|:-------------------------|:----------------------:|:-----------------------:|
+| Live Preview             | ✅ GitHub-Styled       | ✅                     |
+| Sync Scrolling           | ✅ Two-way             | 🔄 Partial/None        |
+| Mermaid Support          | ✅                     | ❌/Limited             |
+| LaTeX Math Rendering     | ✅                     | ❌/Limited             |
 
-    <table>
-      <thead>
-        <tr>
-          <th rowspan="2">Document Type</th>
-          <th colspan="2">Support</th>
-        </tr>
-        <tr>
-          <th>Markdown Viewer (Ours)</th>
-          <th>Other Markdown Editors</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Technical Docs</td>
-          <td>Full + Diagrams</td>
-          <td>Limited/Basic</td>
-        </tr>
-        <tr>
-          <td>Research Notes</td>
-          <td>Full + Math</td>
-          <td>Partial</td>
-        </tr>
-        <tr>
-          <td>Developer Guides</td>
-          <td>Full + Export Options</td>
-          <td>Basic</td>
-        </tr>
-      </tbody>
-    </table>
+### 📝 Multi-row Headers Support
 
-    ## 📝 Text Formatting Examples
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Document Type</th>
+      <th colspan="2">Support</th>
+    </tr>
+    <tr>
+      <th>Markdown Viewer (Ours)</th>
+      <th>Other Markdown Editors</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Technical Docs</td>
+      <td>Full + Diagrams</td>
+      <td>Limited/Basic</td>
+    </tr>
+    <tr>
+      <td>Research Notes</td>
+      <td>Full + Math</td>
+      <td>Partial</td>
+    </tr>
+    <tr>
+      <td>Developer Guides</td>
+      <td>Full + Export Options</td>
+      <td>Basic</td>
+    </tr>
+  </tbody>
+</table>
 
-    ### Text Formatting
+## 📝 Text Formatting Examples
 
-    Text can be formatted in various ways for ~~strikethrough~~, **bold**, *italic*, or ***bold italic***.
+### Text Formatting
 
-    For highlighting important information, use <mark>highlighted text</mark> or add <u>underlines</u> where appropriate.
+Text can be formatted in various ways for ~~strikethrough~~, **bold**, *italic*, or ***bold italic***.
 
-    ### Superscript and Subscript
+For highlighting important information, use <mark>highlighted text</mark> or add <u>underlines</u> where appropriate.
 
-    Chemical formulas: H<sub>2</sub>O, CO<sub>2</sub>  
-    Mathematical notation: x<sup>2</sup>, e<sup>iπ</sup>
+### Superscript and Subscript
 
-    ### Keyboard Keys
+Chemical formulas: H<sub>2</sub>O, CO<sub>2</sub>  
+Mathematical notation: x<sup>2</sup>, e<sup>iπ</sup>
 
-    Press <kbd>Ctrl</kbd> + <kbd>B</kbd> for bold text.
+### Keyboard Keys
 
-    ### Abbreviations
+Press <kbd>Ctrl</kbd> + <kbd>B</kbd> for bold text.
 
-    <abbr title="Graphical User Interface">GUI</abbr>  
-    <abbr title="Application Programming Interface">API</abbr>
+### Abbreviations
 
-    ### Text Alignment
+<abbr title="Graphical User Interface">GUI</abbr>  
+<abbr title="Application Programming Interface">API</abbr>
 
-    <div style="text-align: center">
-    Centered text for headings or important notices
-    </div>
+### Text Alignment
 
-    <div style="text-align: right">
-    Right-aligned text (for dates, signatures, etc.)
-    </div>
+<div style="text-align: center">
+Centered text for headings or important notices
+</div>
 
-    ### **Lists**
+<div style="text-align: right">
+Right-aligned text (for dates, signatures, etc.)
+</div>
 
-    Create bullet points:
-    * Item 1
-    * Item 2
-      * Nested item
-        * Nested further
+### **Lists**
 
-    ### **Links and Images**
+Create bullet points:
+* Item 1
+* Item 2
+  * Nested item
+    * Nested further
 
-    Add a [link](https://github.com/ThisIs-Developer/Markdown-Viewer) to important resources.
+### **Links and Images**
 
-    Embed an image:
-    ![Markdown Logo](https://example.com/logo.png)
+Add a [link](https://github.com/ThisIs-Developer/Markdown-Viewer) to important resources.
 
-    ### **Blockquotes**
+Embed an image:
+![Markdown Logo](https://example.com/logo.png)
 
-    Quote someone famous:
-    > "The best way to predict the future is to invent it." - Alan Kay
+### **Blockquotes**
 
-    ---
+Quote someone famous:
+> "The best way to predict the future is to invent it." - Alan Kay
 
-    ## 🛡️ Security Note
+---
 
-    This is a fully client-side application. Your content never leaves your browser and stays secure on your device.
-  `;
+## 🛡️ Security Note
+
+This is a fully client-side application. Your content never leaves your browser and stays secure on your device.`;
 
   markdownEditor.value = sampleMarkdown;
 
