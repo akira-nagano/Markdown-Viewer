@@ -621,63 +621,140 @@ This is a fully client-side application. Your content never leaves your browser 
     }
   });
 
-  exportPdf.addEventListener("click", function () {
+  exportPdf.addEventListener("click", async function () {
     try {
-      if (!window.html2pdf) {
-        alert(
-          "PDF export library not loaded. Please check your internet connection and try again."
-        );
-        return;
-      }
+      const originalText = exportPdf.innerHTML;
+      exportPdf.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+      exportPdf.disabled = true;
+
+      const progressContainer = document.createElement('div');
+      progressContainer.style.position = 'fixed';
+      progressContainer.style.top = '50%';
+      progressContainer.style.left = '50%';
+      progressContainer.style.transform = 'translate(-50%, -50%)';
+      progressContainer.style.padding = '15px 20px';
+      progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      progressContainer.style.color = 'white';
+      progressContainer.style.borderRadius = '5px';
+      progressContainer.style.zIndex = '9999';
+      progressContainer.style.textAlign = 'center';
+
+      const statusText = document.createElement('div');
+      statusText.textContent = 'Generating PDF...';
+      progressContainer.appendChild(statusText);
+      document.body.appendChild(progressContainer);
+
       const markdown = markdownEditor.value;
       const html = marked.parse(markdown);
-      const sanitizedHtml = DOMPurify.sanitize(html);
+      const sanitizedHtml = DOMPurify.sanitize(html, {
+        ADD_TAGS: ['mjx-container', 'svg', 'path', 'g', 'marker', 'defs', 'pattern', 'clipPath'],
+        ADD_ATTR: ['id', 'class', 'style', 'viewBox', 'd', 'fill', 'stroke', 'transform', 'marker-end', 'marker-start']
+      });
+
       const tempElement = document.createElement("div");
-      tempElement.className = "markdown-body";
+      tempElement.className = "markdown-body pdf-export";
       tempElement.innerHTML = sanitizedHtml;
       tempElement.style.padding = "20px";
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      if (currentTheme === "dark") {
-        tempElement.style.backgroundColor = "#0d1117";
-        tempElement.style.color = "#c9d1d9";
-      } else {
-        tempElement.style.backgroundColor = "#ffffff";
-        tempElement.style.color = "#24292e";
-      }
-      tempElement.style.position = "absolute";
+      tempElement.style.width = "210mm";
+      tempElement.style.margin = "0 auto";
+      tempElement.style.fontSize = "14px";
+      tempElement.style.position = "fixed";
       tempElement.style.left = "-9999px";
+      tempElement.style.top = "0";
+
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      tempElement.style.backgroundColor = currentTheme === "dark" ? "#0d1117" : "#ffffff";
+      tempElement.style.color = currentTheme === "dark" ? "#c9d1d9" : "#24292e";
+
       document.body.appendChild(tempElement);
-      const options = {
-        margin: 10,
-        filename: "document.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-      const originalText = exportPdf.innerHTML;
-      exportPdf.innerHTML =
-        '<i class="bi bi-hourglass-split"></i> Generating...';
-      exportPdf.disabled = true;
-      window
-        .html2pdf()
-        .from(tempElement)
-        .set(options)
-        .save()
-        .then(() => {
-          exportPdf.innerHTML = originalText;
-          exportPdf.disabled = false;
-          document.body.removeChild(tempElement);
-        })
-        .catch((err) => {
-          console.error("PDF generation error:", err);
-          alert("Failed to generate PDF: " + err.message);
-          document.body.removeChild(tempElement);
-          exportPdf.innerHTML = originalText;
-          exportPdf.disabled = false;
+
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      try {
+        await mermaid.run({
+          nodes: tempElement.querySelectorAll('.mermaid'),
+          suppressErrors: true
         });
-    } catch (e) {
-      console.error("PDF export error:", e);
-      alert("PDF export failed: " + e.message);
+      } catch (mermaidError) {
+        console.warn("Mermaid rendering issue:", mermaidError);
+      }
+
+      if (window.MathJax) {
+        try {
+          await MathJax.typesetPromise([tempElement]);
+        } catch (mathJaxError) {
+          console.warn("MathJax rendering issue:", mathJaxError);
+        }
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const pdfOptions = {
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+        hotfixes: ["px_scaling"]
+      };
+
+      const pdf = new jspdf.jsPDF(pdfOptions);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      const contentWidth = pageWidth - (margin * 2);
+
+      const canvas = await html2canvas(tempElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        windowWidth: 1000,
+        windowHeight: tempElement.scrollHeight
+      });
+
+      const scaleFactor = canvas.width / contentWidth;
+      const imgHeight = canvas.height / scaleFactor;
+      const pagesCount = Math.ceil(imgHeight / (pageHeight - margin * 2));
+
+      for (let page = 0; page < pagesCount; page++) {
+        if (page > 0) pdf.addPage();
+
+        const sourceY = page * (pageHeight - margin * 2) * scaleFactor;
+        const sourceHeight = Math.min(canvas.height - sourceY, (pageHeight - margin * 2) * scaleFactor);
+        const destHeight = sourceHeight / scaleFactor;
+
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sourceHeight;
+
+        const ctx = pageCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+
+        const imgData = pageCanvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, destHeight);
+      }
+
+      pdf.save("document.pdf");
+
+      statusText.textContent = 'Download successful!';
+      setTimeout(() => {
+        document.body.removeChild(progressContainer);
+      }, 1500);
+
+      document.body.removeChild(tempElement);
+      exportPdf.innerHTML = originalText;
+      exportPdf.disabled = false;
+
+    } catch (error) {
+      console.error("PDF export failed:", error);
+      alert("PDF export failed: " + error.message);
+      exportPdf.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> Export';
+      exportPdf.disabled = false;
+
+      const progressContainer = document.querySelector('div[style*="Preparing PDF"]');
+      if (progressContainer) {
+        document.body.removeChild(progressContainer);
+      }
     }
   });
 
