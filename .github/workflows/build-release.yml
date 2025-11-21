@@ -40,14 +40,17 @@ jobs:
         run: npm ci
 
       - name: Update version in tauri.conf.json
-        shell: bash
         run: |
-          VERSION=${{ steps.version.outputs.version }}
+          $VERSION = "${{ steps.version.outputs.version }}"
           # Remove 'v' prefix if present
-          VERSION=${VERSION#v}
-          # Update version in tauri.conf.json
-          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" src-tauri/tauri.conf.json
-          cat src-tauri/tauri.conf.json | grep version
+          $VERSION = $VERSION -replace "^v", ""
+          # Update version in tauri.conf.json using PowerShell
+          $configPath = "src-tauri/tauri.conf.json"
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          $config.version = $VERSION
+          $config | ConvertTo-Json -Depth 10 | Set-Content $configPath
+          Write-Host "Updated version to: $VERSION"
+          Get-Content $configPath | Select-String "version"
 
       - name: Build Tauri app
         run: npm run tauri build
