@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node -e \"const fs=require('fs');const path=require('path');const dist='dist';if(!fs.existsSync(dist)){fs.mkdirSync(dist,{recursive:true});}['index.html','styles.css','script.js'].forEach(f=>fs.copyFileSync(f,path.join(dist,f)));const assets='assets';const distAssets=path.join(dist,assets);if(fs.existsSync(assets)){if(!fs.existsSync(distAssets)){fs.mkdirSync(distAssets,{recursive:true});}fs.readdirSync(assets).forEach(f=>fs.copyFileSync(path.join(assets,f),path.join(distAssets,f)));}\"",
+    "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "desktop-internal": "tauri dev",
