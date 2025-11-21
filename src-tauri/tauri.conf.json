@@ -32,6 +32,31 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      }
+    },
+    "fileAssociations": [
+      {
+        "ext": [
+          "md"
+        ],
+        "name": "Markdown File",
+        "description": "Markdown Document",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      },
+      {
+        "ext": [
+          "markdown"
+        ],
+        "name": "Markdown File",
+        "description": "Markdown Document",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      }
     ]
   }
 }
