@@ -610,311 +610,277 @@ This is a fully client-side application. Your content never leaves your browser 
           ADD_TAGS: ['mjx-container'],
           ADD_ATTR: ['id', 'class', 'style']
         });
-        const isDarkTheme =
-          document.documentElement.getAttribute("data-theme") === "dark";
-        const cssTheme = isDarkTheme
-          ? "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.3.0/github-markdown-dark.min.css"
-          : "https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.3.0/github-markdown.min.css";
-        const fullHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Markdown Export</title>
-  <link rel="stylesheet" href="${cssTheme}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${isDarkTheme ? "github-dark" : "github"
-          }.min.css">
-  <!-- MathJax -->
-  <script>
-  window.MathJax = {
-    tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] },
-    svg: { fontCache: 'global' }
-  </article>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      mermaid.initialize({ 
-        startOnLoad: true, 
-        theme: '${isDarkTheme ? "dark" : "default"}' 
+        filters: [{
+          name: 'HTML',
+          extensions: ['html']
+        }],
+          defaultPath: 'document.html'
       });
-    });
-  </script>
-</body>
-</html>`;
-        const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
-
-        if (window.__TAURI_INTERNALS__) {
-          const path = await save({
-            filters: [{
-              name: 'HTML',
-              extensions: ['html']
-            }],
-            defaultPath: 'document.html'
-          });
-          if (path) {
-            // For text files, writeTextFile expects a string
-            await writeTextFile(path, fullHtml);
-          }
-        } else {
-          saveAs(blob, "document.html");
-        }
+    if (path) {
+      // For text files, writeTextFile expects a string
+      await writeTextFile(path, fullHtml);
+    }
+  } else {
+    saveAs(blob, "document.html");
+  }
       } catch (e) {
-        console.error("Export failed:", e);
-        const errorMsg = e.message || e.toString() || JSON.stringify(e);
-        alert("Export failed: " + errorMsg);
-      }
+  console.error("Export failed:", e);
+  const errorMsg = e.message || e.toString() || JSON.stringify(e);
+  alert("Export failed: " + errorMsg);
+}
     });
 
-    exportPdf.addEventListener("click", async function () {
+exportPdf.addEventListener("click", async function () {
+  try {
+    const originalText = exportPdf.innerHTML;
+    exportPdf.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+    exportPdf.disabled = true;
+
+    const progressContainer = document.createElement('div');
+    progressContainer.style.position = 'fixed';
+    progressContainer.style.top = '50%';
+    progressContainer.style.left = '50%';
+    progressContainer.style.transform = 'translate(-50%, -50%)';
+    progressContainer.style.padding = '15px 20px';
+    progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    progressContainer.style.color = 'white';
+    progressContainer.style.borderRadius = '5px';
+    progressContainer.style.zIndex = '9999';
+    progressContainer.style.textAlign = 'center';
+
+    const statusText = document.createElement('div');
+    statusText.textContent = 'Generating PDF...';
+    progressContainer.appendChild(statusText);
+    document.body.appendChild(progressContainer);
+
+    const markdown = markdownEditor.value;
+    const html = marked.parse(markdown);
+    const sanitizedHtml = DOMPurify.sanitize(html, {
+      ADD_TAGS: ['mjx-container', 'svg', 'path', 'g', 'marker', 'defs', 'pattern', 'clipPath'],
+      ADD_ATTR: ['id', 'class', 'style', 'viewBox', 'd', 'fill', 'stroke', 'transform', 'marker-end', 'marker-start']
+    });
+
+    const tempElement = document.createElement("div");
+    tempElement.className = "markdown-body pdf-export";
+    tempElement.innerHTML = sanitizedHtml;
+    tempElement.style.padding = "20px";
+    tempElement.style.width = "210mm";
+    tempElement.style.margin = "0 auto";
+    tempElement.style.fontSize = "14px";
+    tempElement.style.position = "fixed";
+    tempElement.style.left = "-9999px";
+    tempElement.style.top = "0";
+
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    tempElement.style.backgroundColor = currentTheme === "dark" ? "#0d1117" : "#ffffff";
+    tempElement.style.color = currentTheme === "dark" ? "#c9d1d9" : "#24292e";
+
+    document.body.appendChild(tempElement);
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    try {
+      await mermaid.run({
+        nodes: tempElement.querySelectorAll('.mermaid'),
+        suppressErrors: true
+      });
+    } catch (mermaidError) {
+      console.warn("Mermaid rendering issue:", mermaidError);
+    }
+
+    if (window.MathJax) {
       try {
-        const originalText = exportPdf.innerHTML;
-        exportPdf.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
-        exportPdf.disabled = true;
-
-        const progressContainer = document.createElement('div');
-        progressContainer.style.position = 'fixed';
-        progressContainer.style.top = '50%';
-        progressContainer.style.left = '50%';
-        progressContainer.style.transform = 'translate(-50%, -50%)';
-        progressContainer.style.padding = '15px 20px';
-        progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        progressContainer.style.color = 'white';
-        progressContainer.style.borderRadius = '5px';
-        progressContainer.style.zIndex = '9999';
-        progressContainer.style.textAlign = 'center';
-
-        const statusText = document.createElement('div');
-        statusText.textContent = 'Generating PDF...';
-        progressContainer.appendChild(statusText);
-        document.body.appendChild(progressContainer);
-
-        const markdown = markdownEditor.value;
-        const html = marked.parse(markdown);
-        const sanitizedHtml = DOMPurify.sanitize(html, {
-          ADD_TAGS: ['mjx-container', 'svg', 'path', 'g', 'marker', 'defs', 'pattern', 'clipPath'],
-          ADD_ATTR: ['id', 'class', 'style', 'viewBox', 'd', 'fill', 'stroke', 'transform', 'marker-end', 'marker-start']
-        });
-
-        const tempElement = document.createElement("div");
-        tempElement.className = "markdown-body pdf-export";
-        tempElement.innerHTML = sanitizedHtml;
-        tempElement.style.padding = "20px";
-        tempElement.style.width = "210mm";
-        tempElement.style.margin = "0 auto";
-        tempElement.style.fontSize = "14px";
-        tempElement.style.position = "fixed";
-        tempElement.style.left = "-9999px";
-        tempElement.style.top = "0";
-
-        const currentTheme = document.documentElement.getAttribute("data-theme");
-        tempElement.style.backgroundColor = currentTheme === "dark" ? "#0d1117" : "#ffffff";
-        tempElement.style.color = currentTheme === "dark" ? "#c9d1d9" : "#24292e";
-
-        document.body.appendChild(tempElement);
-
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        try {
-          await mermaid.run({
-            nodes: tempElement.querySelectorAll('.mermaid'),
-            suppressErrors: true
-          });
-        } catch (mermaidError) {
-          console.warn("Mermaid rendering issue:", mermaidError);
-        }
-
-        if (window.MathJax) {
-          try {
-            await MathJax.typesetPromise([tempElement]);
-          } catch (mathJaxError) {
-            console.warn("MathJax rendering issue:", mathJaxError);
-          }
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const pdfOptions = {
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-          compress: true,
-          hotfixes: ["px_scaling"]
-        };
-
-        const pdf = new jspdf.jsPDF(pdfOptions);
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 15;
-        const contentWidth = pageWidth - (margin * 2);
-
-        const canvas = await html2canvas(tempElement, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          windowWidth: 1000,
-          windowHeight: tempElement.scrollHeight
-        });
-
-        const scaleFactor = canvas.width / contentWidth;
-        const imgHeight = canvas.height / scaleFactor;
-        const pagesCount = Math.ceil(imgHeight / (pageHeight - margin * 2));
-
-        for (let page = 0; page < pagesCount; page++) {
-          if (page > 0) pdf.addPage();
-
-          const sourceY = page * (pageHeight - margin * 2) * scaleFactor;
-          const sourceHeight = Math.min(canvas.height - sourceY, (pageHeight - margin * 2) * scaleFactor);
-          const destHeight = sourceHeight / scaleFactor;
-
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = sourceHeight;
-
-          const ctx = pageCanvas.getContext('2d');
-          ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
-
-          const imgData = pageCanvas.toDataURL('image/png');
-          pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, destHeight);
-        }
-
-        pdf.save("document.pdf");
-
-        statusText.textContent = 'Download successful!';
-        setTimeout(() => {
-          document.body.removeChild(progressContainer);
-        }, 1500);
-
-        document.body.removeChild(tempElement);
-        exportPdf.innerHTML = originalText;
-        exportPdf.disabled = false;
-
-      } catch (error) {
-        console.error("PDF export failed:", error);
-        alert("PDF export failed: " + error.message);
-        exportPdf.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> Export';
-        exportPdf.disabled = false;
-
-        const progressContainer = document.querySelector('div[style*="Preparing PDF"]');
-        if (progressContainer) {
-          document.body.removeChild(progressContainer);
-        }
-      }
-    });
-
-    copyMarkdownButton.addEventListener("click", function () {
-      try {
-        const markdownText = markdownEditor.value;
-        copyToClipboard(markdownText);
-      } catch (e) {
-        console.error("Copy failed:", e);
-        alert("Failed to copy Markdown: " + e.message);
-      }
-    });
-
-    async function copyToClipboard(text) {
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-          showCopiedMessage();
-        } else {
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          textArea.style.position = "fixed";
-          textArea.style.opacity = "0";
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          const successful = document.execCommand("copy");
-          document.body.removeChild(textArea);
-          if (successful) {
-            showCopiedMessage();
-          } else {
-            throw new Error("Copy command was unsuccessful");
-          }
-        }
-      } catch (err) {
-        console.error("Copy failed:", err);
-        alert("Failed to copy HTML: " + err.message);
+        await MathJax.typesetPromise([tempElement]);
+      } catch (mathJaxError) {
+        console.warn("MathJax rendering issue:", mathJaxError);
       }
     }
 
-    function showCopiedMessage() {
-      const originalText = copyMarkdownButton.innerHTML;
-      copyMarkdownButton.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      setTimeout(() => {
-        copyMarkdownButton.innerHTML = originalText;
-      }, 2000);
+    const pdfOptions = {
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+      hotfixes: ["px_scaling"]
+    };
+
+    const pdf = new jspdf.jsPDF(pdfOptions);
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 15;
+    const contentWidth = pageWidth - (margin * 2);
+
+    const canvas = await html2canvas(tempElement, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      windowWidth: 1000,
+      windowHeight: tempElement.scrollHeight
+    });
+
+    const scaleFactor = canvas.width / contentWidth;
+    const imgHeight = canvas.height / scaleFactor;
+    const pagesCount = Math.ceil(imgHeight / (pageHeight - margin * 2));
+
+    for (let page = 0; page < pagesCount; page++) {
+      if (page > 0) pdf.addPage();
+
+      const sourceY = page * (pageHeight - margin * 2) * scaleFactor;
+      const sourceHeight = Math.min(canvas.height - sourceY, (pageHeight - margin * 2) * scaleFactor);
+      const destHeight = sourceHeight / scaleFactor;
+
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sourceHeight;
+
+      const ctx = pageCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+
+      const imgData = pageCanvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, destHeight);
     }
 
-    const dropEvents = ["dragenter", "dragover", "dragleave", "drop"];
+    pdf.save("document.pdf");
 
-    dropEvents.forEach((eventName) => {
-      dropzone.addEventListener(eventName, preventDefaults, false);
-      document.body.addEventListener(eventName, preventDefaults, false);
-    });
+    statusText.textContent = 'Download successful!';
+    setTimeout(() => {
+      document.body.removeChild(progressContainer);
+    }, 1500);
 
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
+    document.body.removeChild(tempElement);
+    exportPdf.innerHTML = originalText;
+    exportPdf.disabled = false;
+
+  } catch (error) {
+    console.error("PDF export failed:", error);
+    alert("PDF export failed: " + error.message);
+    exportPdf.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> Export';
+    exportPdf.disabled = false;
+
+    const progressContainer = document.querySelector('div[style*="Preparing PDF"]');
+    if (progressContainer) {
+      document.body.removeChild(progressContainer);
     }
+  }
+});
 
-    ["dragenter", "dragover"].forEach((eventName) => {
-      dropzone.addEventListener(eventName, highlight, false);
-    });
+copyMarkdownButton.addEventListener("click", function () {
+  try {
+    const markdownText = markdownEditor.value;
+    copyToClipboard(markdownText);
+  } catch (e) {
+    console.error("Copy failed:", e);
+    alert("Failed to copy Markdown: " + e.message);
+  }
+});
 
-    ["dragleave", "drop"].forEach((eventName) => {
-      dropzone.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-      dropzone.classList.add("active");
-    }
-
-    function unhighlight() {
-      dropzone.classList.remove("active");
-    }
-
-    dropzone.addEventListener("drop", handleDrop, false);
-    dropzone.addEventListener("click", function (e) {
-      if (e.target !== closeDropzoneBtn && !closeDropzoneBtn.contains(e.target)) {
-        fileInput.click();
-      }
-    });
-    closeDropzoneBtn.addEventListener("click", function (e) {
-      e.stopPropagation();
-      dropzone.style.display = "none";
-    });
-
-    function handleDrop(e) {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length) {
-        const file = files[0];
-        const isMarkdownFile =
-          file.type === "text/markdown" ||
-          file.name.endsWith(".md") ||
-          file.name.endsWith(".markdown");
-        if (isMarkdownFile) {
-          importMarkdownFile(file);
-        } else {
-          alert("Please upload a Markdown file (.md or .markdown)");
-        }
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      showCopiedMessage();
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (successful) {
+        showCopiedMessage();
+      } else {
+        throw new Error("Copy command was unsuccessful");
       }
     }
+  } catch (err) {
+    console.error("Copy failed:", err);
+    alert("Failed to copy HTML: " + err.message);
+  }
+}
 
-    document.addEventListener("keydown", function (e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        exportMd.click();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
-        e.preventDefault();
-        copyMarkdownButton.click();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "S") {
-        e.preventDefault();
-        toggleSyncScrolling();
-      }
-    });
+function showCopiedMessage() {
+  const originalText = copyMarkdownButton.innerHTML;
+  copyMarkdownButton.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+
+  setTimeout(() => {
+    copyMarkdownButton.innerHTML = originalText;
+  }, 2000);
+}
+
+const dropEvents = ["dragenter", "dragover", "dragleave", "drop"];
+
+dropEvents.forEach((eventName) => {
+  dropzone.addEventListener(eventName, preventDefaults, false);
+  document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+  e.preventDefault();
+  e.stopPropagation();
+}
+
+["dragenter", "dragover"].forEach((eventName) => {
+  dropzone.addEventListener(eventName, highlight, false);
+});
+
+["dragleave", "drop"].forEach((eventName) => {
+  dropzone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight() {
+  dropzone.classList.add("active");
+}
+
+function unhighlight() {
+  dropzone.classList.remove("active");
+}
+
+dropzone.addEventListener("drop", handleDrop, false);
+dropzone.addEventListener("click", function (e) {
+  if (e.target !== closeDropzoneBtn && !closeDropzoneBtn.contains(e.target)) {
+    fileInput.click();
+  }
+});
+closeDropzoneBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  dropzone.style.display = "none";
+});
+
+function handleDrop(e) {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  if (files.length) {
+    const file = files[0];
+    const isMarkdownFile =
+      file.type === "text/markdown" ||
+      file.name.endsWith(".md") ||
+      file.name.endsWith(".markdown");
+    if (isMarkdownFile) {
+      importMarkdownFile(file);
+    } else {
+      alert("Please upload a Markdown file (.md or .markdown)");
+    }
+  }
+}
+
+document.addEventListener("keydown", function (e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    exportMd.click();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+    e.preventDefault();
+    copyMarkdownButton.click();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "S") {
+    e.preventDefault();
+    toggleSyncScrolling();
+  }
+});
   });
