@@ -660,35 +660,6 @@ This is a fully client-side application. Your content never leaves your browser 
   window.MathJax = {
     tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] },
     svg: { fontCache: 'global' }
-  };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <!-- Mermaid -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
-  <style>
-      body {
-          background-color: ${isDarkTheme ? "#0d1117" : "#ffffff"};
-          color: ${isDarkTheme ? "#c9d1d9" : "#24292e"};
-      }
-      .markdown-body {
-          box-sizing: border-box;
-          min-width: 200px;
-          max-width: 980px;
-          margin: 0 auto;
-          padding: 45px;
-          background-color: ${isDarkTheme ? "#0d1117" : "#ffffff"};
-          color: ${isDarkTheme ? "#c9d1d9" : "#24292e"};
-      }
-      @media (max-width: 767px) {
-          .markdown-body {
-              padding: 15px;
-          }
-      }
-  </style>
-</head>
-<body>
-  <article class="markdown-body">
-      ${sanitizedHtml}
   </article>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
