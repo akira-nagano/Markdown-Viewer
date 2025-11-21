@@ -1,8 +1,12 @@
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
+import { open } from '@tauri-apps/plugin-shell';
+
 document.addEventListener("DOMContentLoaded", function () {
   let markdownRenderTimeout = null;
   const RENDER_DELAY = 100;
   let syncScrollingEnabled = true;
-  let isEditorScrolling = false; 
+  let isEditorScrolling = false;
   let isPreviewScrolling = false;
   let scrollSyncTimeout = null;
   const SCROLL_SYNC_DELAY = 10;
@@ -25,31 +29,31 @@ document.addEventListener("DOMContentLoaded", function () {
   const wordCountElement = document.getElementById("word-count");
   const charCountElement = document.getElementById("char-count");
 
-  const mobileMenuToggle    = document.getElementById("mobile-menu-toggle");
-  const mobileMenuPanel     = document.getElementById("mobile-menu-panel");
-  const mobileMenuOverlay   = document.getElementById("mobile-menu-overlay");
-  const mobileCloseMenu     = document.getElementById("close-mobile-menu");
-  const mobileReadingTime   = document.getElementById("mobile-reading-time");
-  const mobileWordCount     = document.getElementById("mobile-word-count");
-  const mobileCharCount     = document.getElementById("mobile-char-count");
-  const mobileToggleSync    = document.getElementById("mobile-toggle-sync");
-  const mobileImportBtn     = document.getElementById("mobile-import-button");
-  const mobileExportMd      = document.getElementById("mobile-export-md");
-  const mobileExportHtml    = document.getElementById("mobile-export-html");
-  const mobileExportPdf     = document.getElementById("mobile-export-pdf");
-  const mobileCopyMarkdown  = document.getElementById("mobile-copy-markdown");
-  const mobileThemeToggle   = document.getElementById("mobile-theme-toggle");
+  const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+  const mobileMenuPanel = document.getElementById("mobile-menu-panel");
+  const mobileMenuOverlay = document.getElementById("mobile-menu-overlay");
+  const mobileCloseMenu = document.getElementById("close-mobile-menu");
+  const mobileReadingTime = document.getElementById("mobile-reading-time");
+  const mobileWordCount = document.getElementById("mobile-word-count");
+  const mobileCharCount = document.getElementById("mobile-char-count");
+  const mobileToggleSync = document.getElementById("mobile-toggle-sync");
+  const mobileImportBtn = document.getElementById("mobile-import-button");
+  const mobileExportMd = document.getElementById("mobile-export-md");
+  const mobileExportHtml = document.getElementById("mobile-export-html");
+  const mobileExportPdf = document.getElementById("mobile-export-pdf");
+  const mobileCopyMarkdown = document.getElementById("mobile-copy-markdown");
+  const mobileThemeToggle = document.getElementById("mobile-theme-toggle");
 
   // Check dark mode preference first for proper initialization
   const prefersDarkMode =
     window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: dark)").matches;
-  
+
   document.documentElement.setAttribute(
     "data-theme",
     prefersDarkMode ? "dark" : "light"
   );
-  
+
   themeToggle.innerHTML = prefersDarkMode
     ? '<i class="bi bi-sun"></i>'
     : '<i class="bi bi-moon"></i>';
@@ -57,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const initMermaid = () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     const mermaidTheme = currentTheme === "dark" ? "dark" : "default";
-    
+
     mermaid.initialize({
       startOnLoad: false,
       theme: mermaidTheme,
@@ -86,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const uniqueId = 'mermaid-diagram-' + Math.random().toString(36).substr(2, 9);
       return `<div class="mermaid-container"><div class="mermaid" id="${uniqueId}">${code}</div></div>`;
     }
-    
+
     const validLanguage = hljs.getLanguage(language) ? language : "plaintext";
     const highlightedCode = hljs.highlight(code, {
       language: validLanguage,
@@ -289,16 +293,16 @@ This is a fully client-side application. Your content never leaves your browser 
       });
 
       processEmojis(markdownPreview);
-      
+
       // Reinitialize mermaid with current theme before rendering diagrams
       initMermaid();
-      
+
       try {
         mermaid.init(undefined, markdownPreview.querySelectorAll('.mermaid'));
       } catch (e) {
         console.warn("Mermaid rendering failed:", e);
       }
-      
+
       if (window.MathJax) {
         try {
           MathJax.typesetPromise([markdownPreview]).catch((err) => {
@@ -321,7 +325,7 @@ This is a fully client-side application. Your content never leaves your browser 
 
   function importMarkdownFile(file) {
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       markdownEditor.value = e.target.result;
       renderMarkdown();
       dropzone.style.display = "none";
@@ -336,7 +340,7 @@ This is a fully client-side application. Your content never leaves your browser 
       null,
       false
     );
-    
+
     const textNodes = [];
     let node;
     while ((node = walker.nextNode())) {
@@ -349,25 +353,25 @@ This is a fully client-side application. Your content never leaves your browser 
         }
         parent = parent.parentNode;
       }
-      
+
       if (!isInCode && node.nodeValue.includes(':')) {
         textNodes.push(node);
       }
     }
-    
+
     textNodes.forEach(textNode => {
       const text = textNode.nodeValue;
       const emojiRegex = /:([\w+-]+):/g;
-      
+
       let match;
       let lastIndex = 0;
       let result = '';
       let hasEmoji = false;
-      
+
       while ((match = emojiRegex.exec(text)) !== null) {
         const shortcode = match[1];
         const emoji = joypixels.shortnameToUnicode(`:${shortcode}:`);
-        
+
         if (emoji !== `:${shortcode}:`) { // If conversion was successful
           hasEmoji = true;
           result += text.substring(lastIndex, match.index) + emoji;
@@ -377,7 +381,7 @@ This is a fully client-side application. Your content never leaves your browser 
           lastIndex = emojiRegex.lastIndex;
         }
       }
-      
+
       if (hasEmoji) {
         result += text.substring(lastIndex);
         const span = document.createElement('span');
@@ -481,13 +485,13 @@ This is a fully client-side application. Your content never leaves your browser 
   mobileMenuOverlay.addEventListener("click", closeMobileMenu);
 
   function updateMobileStats() {
-    mobileCharCount.textContent   = charCountElement.textContent;
-    mobileWordCount.textContent   = wordCountElement.textContent;
+    mobileCharCount.textContent = charCountElement.textContent;
+    mobileWordCount.textContent = wordCountElement.textContent;
     mobileReadingTime.textContent = readingTimeElement.textContent;
   }
 
   const origUpdateStats = updateDocumentStats;
-  updateDocumentStats = function() {
+  updateDocumentStats = function () {
     origUpdateStats();
     updateMobileStats();
   };
@@ -515,7 +519,7 @@ This is a fully client-side application. Your content never leaves your browser 
     themeToggle.click();
     mobileThemeToggle.innerHTML = themeToggle.innerHTML + " Toggle Dark Mode";
   });
-  
+
   renderMarkdown();
   updateMobileStats();
 
@@ -523,6 +527,42 @@ This is a fully client-side application. Your content never leaves your browser 
   editorPane.addEventListener("scroll", syncEditorToPreview);
   previewPane.addEventListener("scroll", syncPreviewToEditor);
   toggleSyncButton.addEventListener("click", toggleSyncScrolling);
+
+  // Reference Mode Logic
+  const toggleReferenceModeBtn = document.getElementById("toggle-reference-mode");
+  const mobileToggleReferenceModeBtn = document.getElementById("mobile-toggle-reference-mode");
+  const editorPaneContainer = document.querySelector(".editor-pane");
+  let isReferenceMode = false;
+
+  function toggleReferenceMode() {
+    isReferenceMode = !isReferenceMode;
+
+    if (isReferenceMode) {
+      editorPaneContainer.style.display = "none";
+      previewPane.classList.add("reference-mode");
+      // Update desktop button
+      toggleReferenceModeBtn.innerHTML = '<i class="bi bi-layout-split"></i> Split View';
+      toggleReferenceModeBtn.classList.add("border-primary");
+      // Update mobile button
+      mobileToggleReferenceModeBtn.innerHTML = '<i class="bi bi-layout-split me-2"></i> Split View';
+      mobileToggleReferenceModeBtn.classList.add("border-primary");
+    } else {
+      editorPaneContainer.style.display = "block";
+      previewPane.classList.remove("reference-mode");
+      // Update desktop button
+      toggleReferenceModeBtn.innerHTML = '<i class="bi bi-eye"></i> Preview Only';
+      toggleReferenceModeBtn.classList.remove("border-primary");
+      // Update mobile button
+      mobileToggleReferenceModeBtn.innerHTML = '<i class="bi bi-eye me-2"></i> Preview Only';
+      mobileToggleReferenceModeBtn.classList.remove("border-primary");
+    }
+  }
+
+  toggleReferenceModeBtn.addEventListener("click", toggleReferenceMode);
+  mobileToggleReferenceModeBtn.addEventListener("click", () => {
+    toggleReferenceMode();
+    closeMobileMenu();
+  });
   themeToggle.addEventListener("click", function () {
     const theme =
       document.documentElement.getAttribute("data-theme") === "dark"
@@ -535,7 +575,22 @@ This is a fully client-side application. Your content never leaves your browser 
     } else {
       themeToggle.innerHTML = '<i class="bi bi-moon"></i>';
     }
-    
+
+    // Handle external links in Tauri
+    if (window.__TAURI_INTERNALS__) {
+      document.addEventListener('click', async (e) => {
+        const target = e.target.closest('a');
+        if (target && target.href && (target.target === '_blank' || target.href.startsWith('http'))) {
+          e.preventDefault();
+          try {
+            await open(target.href);
+          } catch (err) {
+            console.error('Failed to open link:', err);
+          }
+        }
+      });
+    }
+
     renderMarkdown();
   });
 
@@ -551,24 +606,39 @@ This is a fully client-side application. Your content never leaves your browser 
     this.value = "";
   });
 
-  exportMd.addEventListener("click", function () {
+  exportMd.addEventListener("click", async function () {
     try {
-      const blob = new Blob([markdownEditor.value], {
-        type: "text/markdown;charset=utf-8",
-      });
-      saveAs(blob, "document.md");
+      const markdown = markdownEditor.value;
+      if (window.__TAURI_INTERNALS__) {
+        const path = await save({
+          filters: [{
+            name: 'Markdown',
+            extensions: ['md']
+          }],
+          defaultPath: 'document.md'
+        });
+        if (path) {
+          await writeTextFile(path, markdown);
+        }
+      } else {
+        const blob = new Blob([markdown], {
+          type: "text/markdown;charset=utf-8",
+        });
+        saveAs(blob, "document.md");
+      }
     } catch (e) {
       console.error("Export failed:", e);
-      alert("Export failed: " + e.message);
+      const errorMsg = e.message || e.toString() || JSON.stringify(e);
+      alert("Export failed: " + errorMsg);
     }
   });
 
-  exportHtml.addEventListener("click", function () {
+  exportHtml.addEventListener("click", async function () {
     try {
       const markdown = markdownEditor.value;
       const html = marked.parse(markdown);
       const sanitizedHtml = DOMPurify.sanitize(html, {
-        ADD_TAGS: ['mjx-container'], 
+        ADD_TAGS: ['mjx-container'],
         ADD_ATTR: ['id', 'class', 'style']
       });
       const isDarkTheme =
@@ -583,9 +653,18 @@ This is a fully client-side application. Your content never leaves your browser 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Markdown Export</title>
   <link rel="stylesheet" href="${cssTheme}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${
-    isDarkTheme ? "github-dark" : "github"
-  }.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${isDarkTheme ? "github-dark" : "github"
+        }.min.css">
+  <!-- MathJax -->
+  <script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\\\(', '\\\\)']] },
+    svg: { fontCache: 'global' }
+  };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
   <style>
       body {
           background-color: ${isDarkTheme ? "#0d1117" : "#ffffff"};
@@ -611,13 +690,37 @@ This is a fully client-side application. Your content never leaves your browser 
   <article class="markdown-body">
       ${sanitizedHtml}
   </article>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      mermaid.initialize({ 
+        startOnLoad: true, 
+        theme: '${isDarkTheme ? "dark" : "default"}' 
+      });
+    });
+  </script>
 </body>
 </html>`;
       const blob = new Blob([fullHtml], { type: "text/html;charset=utf-8" });
-      saveAs(blob, "document.html");
+
+      if (window.__TAURI_INTERNALS__) {
+        const path = await save({
+          filters: [{
+            name: 'HTML',
+            extensions: ['html']
+          }],
+          defaultPath: 'document.html'
+        });
+        if (path) {
+          // For text files, writeTextFile expects a string
+          await writeTextFile(path, fullHtml);
+        }
+      } else {
+        saveAs(blob, "document.html");
+      }
     } catch (e) {
-      console.error("HTML export failed:", e);
-      alert("HTML export failed: " + e.message);
+      console.error("Export failed:", e);
+      const errorMsg = e.message || e.toString() || JSON.stringify(e);
+      alert("Export failed: " + errorMsg);
     }
   });
 
@@ -838,8 +941,8 @@ This is a fully client-side application. Your content never leaves your browser 
       fileInput.click();
     }
   });
-  closeDropzoneBtn.addEventListener("click", function(e) {
-    e.stopPropagation(); 
+  closeDropzoneBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
     dropzone.style.display = "none";
   });
 
