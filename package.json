@@ -1,15 +1,15 @@
 {
   "name": "markdown-viewer-main",
   "version": "1.0.0",
-  "description": "<div align=\"center\">     <img src=\"assets/icon.jpg\" alt=\"Markdown Viewer Logo\" width=\"150px\"/>     <h3>A powerful GitHub-style Markdown rendering tool</h3>     <p>Fast, secure, and feature-rich - all running in your browser</p>     <a href=\"https://markdownviewer.pages.dev/\">Live Demo</a> •      <a href=\"#-features\">Features</a> •      <a href=\"#-screenshots\">Screenshots</a> •      <a href=\"#-usage\">Usage</a> •      <a href=\"#-license\">License</a> </div>",
+  "description": "A powerful GitHub-style Markdown rendering tool",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node -e \"const fs=require('fs');const path=require('path');const dist='dist';if(!fs.existsSync(dist)){fs.mkdirSync(dist,{recursive:true});}['index.html','styles.css','script.js'].forEach(f=>fs.copyFileSync(f,path.join(dist,f)));const assets='assets';const distAssets=path.join(dist,assets);if(fs.existsSync(assets)){if(!fs.existsSync(distAssets)){fs.mkdirSync(distAssets,{recursive:true});}fs.readdirSync(assets).forEach(f=>fs.copyFileSync(path.join(assets,f),path.join(distAssets,f)));}\"",
     "preview": "vite preview",
     "tauri": "tauri",
-    "desktop": "run-desktop.bat",
-    "desktop-internal": "tauri dev"
+    "desktop-internal": "tauri dev",
+    "desktop": "run-desktop.bat"
   },
   "keywords": [],
   "author": "",
